@@ -23,3 +23,6 @@ target_include_directories(${MAIN_TARGET}
 target_link_libraries(${MAIN_TARGET}
     ${CMAKE_CURRENT_BINARY_DIR}/raknet/lib/libRakNetLibStatic.a
     pthread)
+
+set_property(TARGET ${MAIN_TARGET} PROPERTY CXX_STANDARD 11)
+set_property(TARGET ${MAIN_TARGET} PROPERTY CXX_STANDARD_REQUIRED ON)
