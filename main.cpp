@@ -4,6 +4,7 @@
 #include <raknet/NatPunchthroughServer.h>
 #include <cmdparser.hpp>
 #include <signal.h>
+#include <memory>
 
 namespace {
 
@@ -12,7 +13,7 @@ class DebugPrint :
 {
     void OnServerMessage(const char *msg) override
     {
-        std::cout << msg;
+        std::cout << msg << std::endl;
     }
 };
 
@@ -35,10 +36,17 @@ void register_sigterm()
     std::cout << "Registering SIGTERM/SIGINT handler" << std::endl;
 }
 
+std::shared_ptr<RakNet::Packet> receive(RakNet::RakPeerInterface* rakPeer)
+{
+    auto packet = rakPeer->Receive();
+    return {packet, [=](RakNet::Packet* packet) {rakPeer->DeallocatePacket(packet);}};
+}
+
 void run(int argn, char** argv)
 {
     cli::Parser parser(argn, argv);
     parser.set_required<unsigned short>("p", "port", "Port to listen on");
+    parser.set_required<std::string>("a", "address", "Address to bind to");
 
     parser.run_and_exit_if_error();
 
@@ -58,14 +66,26 @@ void run(int argn, char** argv)
     natPunchthroughServer.SetDebugInterface(&debugPrint);
 
     std::vector<RakNet::SocketDescriptor> socketDescriptorList = {
-        RakNet::SocketDescriptor(port, "")};
+        RakNet::SocketDescriptor(port, parser.get<std::string>("a").c_str())};
 
-    rakPeer->Startup(MaximumConnections, socketDescriptorList.data(), socketDescriptorList.size());
+    if (rakPeer->Startup(MaximumConnections, socketDescriptorList.data(),
+                         socketDescriptorList.size())!=RakNet::RAKNET_STARTED)
+    {
+        RakNet::RakPeerInterface::DestroyInstance(rakPeer);
+        throw std::runtime_error("Unable to start RakNet");
+    }
 
-    std::cout << "Server started" << std::endl;
+    rakPeer->SetMaximumIncomingConnections(MaximumConnections);
+    std::cout << "Server started on " << rakPeer->GetMyBoundAddress().ToString(true) << std::endl;
 
     while(!stop_running)
     {
+        while (auto packet = receive(rakPeer))
+        {
+            std::cout << "Received packet from " <<
+                         packet->systemAddress.ToString(true) << std::endl;
+        }
+
         sleep(1);
     }
 
