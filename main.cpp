@@ -6,6 +6,16 @@
 #include <signal.h>
 
 namespace {
+
+class DebugPrint :
+  public RakNet::NatPunchthroughServerDebugInterface
+{
+    void OnServerMessage(const char *msg) override
+    {
+        std::cout << msg;
+    }
+};
+
 volatile sig_atomic_t stop_running = 0;
 }
 
@@ -20,8 +30,9 @@ void register_sigterm()
     memset(&action, 0, sizeof(struct sigaction));
     action.sa_handler = sigterm_handler;
     sigaction(SIGTERM, &action, NULL);
+    sigaction(SIGINT, &action, NULL);
 
-    std::cout << "Registering SIGTERM handler" << std::endl;
+    std::cout << "Registering SIGTERM/SIGINT handler" << std::endl;
 }
 
 void run(int argn, char** argv)
@@ -43,6 +54,9 @@ void run(int argn, char** argv)
     RakNet::NatPunchthroughServer natPunchthroughServer;
     rakPeer->AttachPlugin(&natPunchthroughServer);
 
+    DebugPrint debugPrint;
+    natPunchthroughServer.SetDebugInterface(&debugPrint);
+
     std::vector<RakNet::SocketDescriptor> socketDescriptorList = {
         RakNet::SocketDescriptor(port, "")};
 
@@ -55,7 +69,7 @@ void run(int argn, char** argv)
         sleep(1);
     }
 
-    std::cout << "Stopping.." << std::endl;
+    std::cout << "\nStopping.." << std::endl;
 
     rakPeer->Shutdown(100);
 
