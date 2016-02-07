@@ -83,7 +83,14 @@ void run(int argn, char** argv)
         while (auto packet = receive(rakPeer))
         {
             std::cout << "Received packet from " <<
-                         packet->systemAddress.ToString(true) << std::endl;
+                         packet->systemAddress.ToString(true);
+
+            if (packet->length >= 1)
+            {
+                std::cout << " id: " << int(packet->data[0]);
+            }
+
+            std::cout << std::endl;
         }
 
         sleep(1);
