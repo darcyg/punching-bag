@@ -73,6 +73,8 @@ public:
 
     bool run(int argn, char* argv[]);
 
+    void print_help(std::ostream& out) const;
+
 private:
 
     void register_option(option_handle option, type option_type,

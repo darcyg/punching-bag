@@ -1,5 +1,38 @@
 #include "command_line_parser.hpp"
 
+namespace {
+
+std::string spaces(std::size_t n)
+{
+    std::string result;
+    for (int i=0; i<n; ++i)
+        result += ' ';
+    return result;
+}
+
+}
+
+
+void command_line_parser::print_help(std::ostream& out) const
+{
+    std::size_t longest_long_name_length=0;
+    for (auto&& description : m_description_list)
+        longest_long_name_length = std::max(longest_long_name_length, description.long_name.length());
+
+    for (auto&& each : m_description_list)
+    {
+        auto padding = longest_long_name_length-each.long_name.length();
+
+        out << '-' << each.short_name << ", --" << each.long_name << spaces(padding);
+        out << " : " << each.description;
+
+        if (each.option_type == type::required)
+            out << " (REQUIRED)";
+
+        out << std::endl;
+    }
+}
+
 command_line_parser::command_line_parser() = default;
 command_line_parser::~command_line_parser() = default;
 
