@@ -15,20 +15,14 @@ ExternalProject_Add(RakNet
   UPDATE_COMMAND ""
 )
 
-ExternalProject_Add(CmdParser
-  GIT_REPOSITORY https://github.com/FlorianRappl/CmdParser.git
-  CONFIGURE_COMMAND ""
-  UPDATE_COMMAND ""
-  BUILD_COMMAND ""
-  INSTALL_COMMAND ""
-)
-
 set(MAIN_TARGET punching-bag)
-add_executable(${MAIN_TARGET} main.cpp)
+add_executable(${MAIN_TARGET}
+    main.cpp
+    command_line_parser.cpp
+    command_line_parser.hpp)
 
 
 target_include_directories(${MAIN_TARGET}
-    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/CmdParser-prefix/src/CmdParser
     PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/raknet/include/)
 
 target_link_libraries(${MAIN_TARGET}

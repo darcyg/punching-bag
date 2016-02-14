@@ -2,9 +2,10 @@
 #include <string>
 #include <raknet/RakPeerInterface.h>
 #include <raknet/NatPunchthroughServer.h>
-#include <cmdparser.hpp>
 #include <signal.h>
 #include <memory>
+#include "command_line_parser.hpp"
+#include <iostream>
 
 namespace {
 
@@ -44,15 +45,15 @@ std::shared_ptr<RakNet::Packet> receive(RakNet::RakPeerInterface* rakPeer)
 
 void run(int argn, char** argv)
 {
-    cli::Parser parser(argn, argv);
-    parser.set_required<unsigned short>("p", "port", "Port to listen on");
-    parser.set_required<std::string>("a", "address", "Address to bind to");
+    command_line_parser parser;
+    auto port_option = parser.add<unsigned short>(command_line_parser::type::required, 'p', "port", "Port to listen on");
+    auto address_option = parser.add<std::string>(command_line_parser::type::required, 'a', "address", "Address(es) to bind two. Two addresses will improve success rate.");
 
-    parser.run_and_exit_if_error();
+    parser.run(argn, argv);
 
     register_sigterm();
 
-    auto port = parser.get<unsigned short>("p");
+    auto port = port_option->get();
     auto MaximumConnections = 128;
 
     std::cout << "Starting server on port " << port << std::endl;
@@ -65,8 +66,13 @@ void run(int argn, char** argv)
     DebugPrint debugPrint;
     natPunchthroughServer.SetDebugInterface(&debugPrint);
 
-    std::vector<RakNet::SocketDescriptor> socketDescriptorList = {
-        RakNet::SocketDescriptor(port, parser.get<std::string>("a").c_str())};
+    std::vector<RakNet::SocketDescriptor> socketDescriptorList;
+
+    for (auto&& address : address_option->range())
+    {
+        socketDescriptorList.push_back(RakNet::SocketDescriptor(port, address.c_str()));
+    }
+
 
     if (rakPeer->Startup(MaximumConnections, socketDescriptorList.data(),
                          socketDescriptorList.size())!=RakNet::RAKNET_STARTED)
@@ -76,7 +82,7 @@ void run(int argn, char** argv)
     }
 
     rakPeer->SetMaximumIncomingConnections(MaximumConnections);
-    std::cout << "Server started on " << rakPeer->GetMyBoundAddress().ToString(true) << std::endl;
+    std::cout << "Server started on " << rakPeer->GetMyBoundAddress().ToString(true) <<", using "<<  socketDescriptorList.size() << " IPs" << std::endl;
 
     while(!stop_running)
     {
