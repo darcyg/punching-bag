@@ -4,7 +4,7 @@
 #include <raknet/NatPunchthroughServer.h>
 #include <signal.h>
 #include <memory>
-#include "command_line_parser.hpp"
+#include <command_line/parser.hpp>
 #include <iostream>
 
 namespace {

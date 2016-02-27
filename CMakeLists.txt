@@ -15,18 +15,26 @@ ExternalProject_Add(RakNet
   UPDATE_COMMAND ""
 )
 
+ExternalProject_Add(command_line
+  GIT_REPOSITORY https://github.com/ltjax/command_line.git
+  CMAKE_ARGS
+    -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/command_line/
+    -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+  UPDATE_COMMAND ""
+)
+
 set(MAIN_TARGET punching-bag)
 add_executable(${MAIN_TARGET}
-    main.cpp
-    command_line_parser.cpp
-    command_line_parser.hpp)
+    main.cpp)
 
 
 target_include_directories(${MAIN_TARGET}
-    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/raknet/include/)
+    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/raknet/include/
+    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/command_line/include/)
 
 target_link_libraries(${MAIN_TARGET}
     ${CMAKE_CURRENT_BINARY_DIR}/raknet/lib/libRakNetLibStatic.a
+    ${CMAKE_CURRENT_BINARY_DIR}/command_line/lib/libcommand_line.a
     pthread)
 
 set_property(TARGET ${MAIN_TARGET} PROPERTY CXX_STANDARD 11)
