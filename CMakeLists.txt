@@ -20,7 +20,6 @@ ExternalProject_Add(command_line
   CMAKE_ARGS
     -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/command_line/
     -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-  UPDATE_COMMAND ""
 )
 
 set(MAIN_TARGET punching-bag)

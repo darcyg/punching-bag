@@ -45,9 +45,9 @@ std::shared_ptr<RakNet::Packet> receive(RakNet::RakPeerInterface* rakPeer)
 
 void run(int argn, char** argv)
 {
-    command_line_parser parser;
-    auto port_option = parser.add<unsigned short>(command_line_parser::type::required, 'p', "port", "Port to listen on.");
-    auto address_option = parser.add<std::string>(command_line_parser::type::required, 'a', "address", "Address(es) to bind two. Two addresses will improve success rate.");
+    command_line::parser parser;
+    auto port_option = parser.mandatory<unsigned short>('p', "port", "Port to listen on.");
+    auto address_option = parser.mandatory<std::string>('a', "address", "Address(es) to bind two. Two addresses will improve success rate.");
 
     try
     {
